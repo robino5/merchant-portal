@@ -1,0 +1,32 @@
+// If you want to override variables do it here
+@import "variables";
+
+$enable-ltr: true;
+$enable-rtl: true;
+
+// Import CoreUI for React components library
+@import "@coreui/coreui/scss/coreui";
+
+// Import Chart.js custom tooltips styles
+@import "@coreui/chartjs/scss/coreui-chartjs";
+
+@import "layout";
+@import "example";
+
+// If you want to add custom CSS you can put it here.
+@import "custom";
+
+
+.bg_gradient{
+    /* background: -webkit-linear-gradient(right, #ee7724, #d8363a, #dd3675, #b44593); */
+    /* background: blue; */
+  }
+  .gradient-custom-2{
+    left: -100%;
+    z-index: -1;
+    background: -webkit-linear-gradient(left,   #ee7724, #d8363a, #dd3675);
+    transition: all 0.4s;
+  }
+  .gradient-custom-2:hover{
+  left: 0;
+  }
