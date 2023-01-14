@@ -51,6 +51,24 @@ const MerStatement = () => {
       });
   };
 
+  const getUser = () => {
+    const headers = {
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    };
+    axios
+      .get(`${process.env.REACT_APP_API_URL}mruser-auth/login`, { headers })
+      .then((responce) => {
+        console.log(responce.data.user_id);
+        localStorage.setItem("username", responce.data.user_id);
+      })
+      .catch((error) => {
+        console.error("There was an error!", error);
+        if (error.response.status == 401) {
+          navigate("/");
+        }
+      });
+  };
+
   const openDetails = (e) => {
     setStatementDetails(e);
     setVisible(!visible);
@@ -197,7 +215,8 @@ const MerStatement = () => {
     },
     {
       name: "Final Amount",
-      selector: (row) => row.merchant_order_amount - row.refund_amount,
+      selector: (row) =>
+        row.merchant_order_amount - (row.refund_amount + row.pgw_charge),
     },
     {
       name: "Order Status",
@@ -227,6 +246,7 @@ const MerStatement = () => {
 
   useEffect(() => {
     getStatementList();
+    getUser();
   }, []);
 
   return (

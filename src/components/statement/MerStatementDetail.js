@@ -70,7 +70,8 @@ const MerStatementDetail = (props) => {
             <td>Total Amount</td>
             <td>:</td>
             <td>
-              {props.data.merchant_order_amount + props.data.refund_amount}
+              {props.data.merchant_order_amount +
+                (props.data.refund_amount + props.data.pgw_charge)}
             </td>
           </tr>
           <tr>
