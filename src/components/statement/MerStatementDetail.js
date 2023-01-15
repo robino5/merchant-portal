@@ -4,6 +4,20 @@ import { DateTime } from "luxon";
 
 const MerStatementDetail = (props) => {
   console.log("props", props);
+
+  const getTransactionStatus = (value) => {
+    if (value.dispute_status == "N") {
+      return value.gw_order_status;
+    } else if (value.dispute_status == "P") {
+      return "DISPUTED";
+    } else if (value.dispute_status == "C") {
+      return "CHARGEBACK";
+    } else if (value.dispute_status == "D") {
+      return "DECLINE";
+    } else if (value.dispute_status == "R") {
+      return "REVERSAL";
+    }
+  };
   return (
     <div className="d-flex flex-row align-items-center">
       <CTable className="table-borderless">
@@ -31,7 +45,7 @@ const MerStatementDetail = (props) => {
           <tr>
             <td>Status</td>
             <td>:</td>
-            <td>{props.data.gw_order_status}</td>
+            <td>{getTransactionStatus(props.data)}</td>
           </tr>
           <tr>
             <td>Creation date</td>
@@ -64,14 +78,14 @@ const MerStatementDetail = (props) => {
           <tr>
             <td>Refund Amount</td>
             <td>:</td>
-            <td>{props.data.refund_amount}</td>
+            <td>{props.data.refund_amount - props.data.pgw_charge}</td>
           </tr>
           <tr>
             <td>Total Amount</td>
             <td>:</td>
             <td>
-              {props.data.merchant_order_amount +
-                (props.data.refund_amount + props.data.pgw_charge)}
+              {props.data.merchant_order_amount -
+                (props.data.refund_amount - props.data.pgw_charge)}
             </td>
           </tr>
           <tr>

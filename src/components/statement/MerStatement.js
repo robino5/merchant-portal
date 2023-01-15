@@ -176,6 +176,34 @@ const MerStatement = () => {
     // console.log(data);
   };
 
+  const getTransactionStatus = (value) => {
+    if (value.dispute_status == "N") {
+      return value.gw_order_status;
+    }
+    if (value.dispute_status == "P") {
+      return "DISPUTED";
+    }
+    if (value.dispute_status == "C") {
+      return "CHARGEBACK";
+    }
+    if (value.dispute_status == "D") {
+      return "DECLINE";
+    }
+    if (value.dispute_status == "R") {
+      return "REVERSAL";
+    }
+  };
+
+  const setTextColor = (e) => {
+    if (e == "DISPUTED") {
+      return "text-primary";
+    } else if (e == "DECLINE") {
+      return "text-danger";
+    } else {
+      return "text-dark";
+    }
+  };
+
   const column = [
     {
       name: "SL",
@@ -211,16 +239,20 @@ const MerStatement = () => {
     },
     {
       name: "Refund Amount",
-      selector: (row) => row.refund_amount,
+      selector: (row) => row.refund_amount - row.pgw_charge,
     },
     {
       name: "Final Amount",
       selector: (row) =>
-        row.merchant_order_amount - (row.refund_amount + row.pgw_charge),
+        row.merchant_order_amount - (row.refund_amount - row.pgw_charge),
     },
     {
       name: "Order Status",
-      selector: (row) => row.gw_order_status,
+      selector: (row) => (
+        <span className={setTextColor(getTransactionStatus(row))}>
+          {getTransactionStatus(row)}
+        </span>
+      ),
     },
     {
       name: "Description",
