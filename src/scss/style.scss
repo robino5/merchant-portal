@@ -34,3 +34,13 @@ $enable-rtl: true;
   .chang-password{
     cursor:pointer;
   }
+
+  .image-wrapper {
+    width: 100%;
+    object-fit: contain;
+    backdrop-filter: blur(1px);
+  }
+
+  .login-image-wrapper{
+    width: 226px;
+  }
