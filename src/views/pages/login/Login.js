@@ -73,7 +73,7 @@ const Login = () => {
                     <CImage className="login-image-wrapper" src={logo} />
                   </div>
                   <div className="text-center">
-                    <h4 className="mt-1  pb-1">Merchant Login</h4>
+                    <h4 className="mt-1  pb-1">Merchant Sign in</h4>
                   </div>
                   {/* <CFormLabel>Merchant Id</CFormLabel>
                   <FormControl
