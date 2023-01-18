@@ -239,12 +239,15 @@ const MerStatement = () => {
     },
     {
       name: "Refund Amount",
-      selector: (row) => row.refund_amount - row.pgw_charge,
+      selector: (row) =>
+        row.refund_amount ? row.refund_amount - row.pgw_charge : 0,
     },
     {
       name: "Final Amount",
       selector: (row) =>
-        row.merchant_order_amount - (row.refund_amount - row.pgw_charge),
+        row.refund_amount
+          ? row.merchant_order_amount - row.refund_amount
+          : row.merchant_order_amount,
     },
     {
       name: "Order Status",
