@@ -24,6 +24,7 @@ const MerStatement = () => {
   const navigate = useNavigate();
   const [visible, setVisible] = useState(false);
   const [orderAmount, setOrderAmount] = useState("");
+  const [txn, setTxnId] = useState("");
   const [periodFrom, setPeriodFrom] = useState("");
   const [periodTo, setPeriodTo] = useState("");
   const [staus, setStatus] = useState("");
@@ -80,6 +81,9 @@ const MerStatement = () => {
   const handleOrderNumber = (e) => {
     setOrderAmount(e.target.value);
   };
+  const handleTxnId = (e) => {
+    setTxnId(e.target.value);
+  };
   const handlePeriodFrom = (e) => {
     setPeriodFrom(e.target.value);
   };
@@ -114,6 +118,7 @@ const MerStatement = () => {
 
     const data = {
       order_id: orderAmount,
+      txn_id: txn,
       period_from: `${periodFrom}T00:00:00`,
       period_to: `${periodTo}T23:59:59`,
       status: staus,
@@ -124,6 +129,9 @@ const MerStatement = () => {
     };
     if (!orderAmount) {
       delete data.order_id;
+    }
+    if (!txn) {
+      delete data.txn_id;
     }
     if (!periodFrom) {
       delete data.period_from;
@@ -176,28 +184,10 @@ const MerStatement = () => {
     // console.log(data);
   };
 
-  const getTransactionStatus = (value) => {
-    if (value.dispute_status == "N") {
-      return value.gw_order_status;
-    }
-    if (value.dispute_status == "P") {
-      return "DISPUTED";
-    }
-    if (value.dispute_status == "C") {
-      return "CHARGEBACK";
-    }
-    if (value.dispute_status == "D") {
-      return "DECLINE";
-    }
-    if (value.dispute_status == "R") {
-      return "REVERSAL";
-    }
-  };
-
   const setTextColor = (e) => {
     if (e == "DISPUTED") {
       return "text-primary";
-    } else if (e == "DECLINE") {
+    } else if (e == "DECLINED") {
       return "text-danger";
     } else {
       return "text-dark";
@@ -208,30 +198,32 @@ const MerStatement = () => {
     {
       name: "SL",
       selector: (row, index) => index + 1,
-      maxWidth: "15px",
+      width: "55px",
     },
     {
       name: "Order ID",
       selector: (row) => row.merchant_tran_id,
+      minWidth: "135px;",
     },
     {
       name: "Transection ID",
       selector: (row) => row.txn_id,
+      minWidth: "200px;",
     },
     {
-      name: "Merchant Name",
+      name: "Merchant Short Name",
       sortable: true,
-      grow: 2,
-      selector: (row) => row.merchant_name,
+      selector: (row) => row.short_name,
+      minWidth: "70px;",
     },
 
     {
       name: "Creation date",
-      grow: 2,
       selector: (row) =>
         DateTime.fromISO(row.created_at, { zone: "Asia/Dhaka" }).toLocaleString(
           DateTime.DATETIME_MED
         ),
+      minWidth: "70px;",
     },
     {
       name: "Amount",
@@ -246,14 +238,14 @@ const MerStatement = () => {
       name: "Final Amount",
       selector: (row) =>
         row.refund_amount
-          ? row.merchant_order_amount - row.refund_amount
+          ? row.merchant_order_amount - (row.refund_amount - row.pgw_charge)
           : row.merchant_order_amount,
     },
     {
       name: "Order Status",
       selector: (row) => (
-        <span className={setTextColor(getTransactionStatus(row))}>
-          {getTransactionStatus(row)}
+        <span className={setTextColor(row.gw_order_status)}>
+          {row.gw_order_status}
         </span>
       ),
     },
@@ -291,12 +283,14 @@ const MerStatement = () => {
           <CCard>
             <CCardBody>
               <CForm>
-                <CFormLabel>Order Number</CFormLabel>
+                <CFormLabel>Order ID</CFormLabel>
                 <CFormInput
                   size="sm"
                   type="text"
                   onChange={handleOrderNumber}
                 />
+                <CFormLabel>Transaction ID</CFormLabel>
+                <CFormInput size="sm" type="text" onChange={handleTxnId} />
                 <CFormLabel className="mt-2">Period from</CFormLabel>
                 <CFormInput size="sm" type="date" onChange={handlePeriodFrom} />
                 <CFormLabel className="mt-2">Period To</CFormLabel>
@@ -305,9 +299,12 @@ const MerStatement = () => {
                 <CFormSelect size="sm" onChange={handleStatus}>
                   <option value={""}>Select One</option>
                   <option>APPROVED</option>
-                  <option>PENDING</option>
-                  <option>REJECTED</option>
-                  <option>CANCELED</option>
+                  <option>DISPUTED</option>
+                  <option>REVERSED</option>
+                  <option>REFUNDED</option>
+                  <option>CHARGEBACK</option>
+                  <option>DECLINED</option>
+                  <option>CANCELLED</option>
                 </CFormSelect>
                 <CFormLabel className="mt-2">Currency</CFormLabel>
                 <CFormSelect size="sm" onChange={handleCurrency}>
@@ -348,7 +345,7 @@ const MerStatement = () => {
             title="Statement List"
             columns={column}
             data={statement}
-            pagination
+            pagination={50}
             expandableCCol
           />
         </CCol>

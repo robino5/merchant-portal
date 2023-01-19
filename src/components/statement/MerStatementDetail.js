@@ -11,7 +11,10 @@ const MerStatementDetail = (props) => {
 
   useEffect(() => {
     let status;
-    if (props.data.gw_order_status != null) {
+    if (
+      props.data.gw_order_status != null &&
+      props.data.gw_order_status != "DECLINED"
+    ) {
       if (props.data.gw_json_log.Message) {
         delete props.data.gw_json_log.Message.ThreeDSVars;
         status = props.data.gw_json_log.Message;
@@ -26,20 +29,6 @@ const MerStatementDetail = (props) => {
       }
     }
   }, []);
-
-  const getTransactionStatus = (value) => {
-    if (value.dispute_status == "N") {
-      return value.gw_order_status;
-    } else if (value.dispute_status == "P") {
-      return "DISPUTED";
-    } else if (value.dispute_status == "C") {
-      return "CHARGEBACK";
-    } else if (value.dispute_status == "D") {
-      return "DECLINE";
-    } else if (value.dispute_status == "R") {
-      return "REVERSAL";
-    }
-  };
 
   return (
     <div className="">
@@ -95,7 +84,7 @@ const MerStatementDetail = (props) => {
                 <tr>
                   <td>Status</td>
                   <td>:</td>
-                  <td>{getTransactionStatus(props.data)}</td>
+                  <td>{props.data.gw_order_status}</td>
                 </tr>
                 <tr>
                   <td>Creation date</td>
