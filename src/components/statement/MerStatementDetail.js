@@ -157,9 +157,21 @@ const MerStatementDetail = (props) => {
                   </td>
                 </tr>
                 <tr>
+                  <td>Settelement Status</td>
+                  <td>:</td>
+                  <td>
+                    {props.data.settlement_flag == 1 ? "Settled" : "Unsettled"}
+                  </td>
+                </tr>
+                <tr hidden={props.data.settlement_flag != 1 ? true : false}>
                   <td>Pay Date</td>
                   <td>:</td>
-                  <td>{props.data.gw_txn_timestamp}</td>
+                  <td>
+                    {" "}
+                    {DateTime.fromISO(props.data.settlement_date, {
+                      zone: "Asia/Dhaka",
+                    }).toLocaleString(DateTime.DATETIME_MED)}
+                  </td>
                 </tr>
                 <tr>
                   <td>Description</td>

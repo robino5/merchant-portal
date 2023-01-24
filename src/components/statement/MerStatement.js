@@ -235,9 +235,9 @@ const MerStatement = () => {
     {
       name: "Creation date",
       selector: (row) =>
-        DateTime.fromISO(row.created_at, { zone: "Asia/Dhaka" }).toLocaleString(
-          DateTime.DATETIME_MED
-        ),
+        DateTime.fromISO(row.gw_txn_timestamp, {
+          zone: "Asia/Dhaka",
+        }).toLocaleString(DateTime.DATETIME_MED),
       minWidth: "70px;",
     },
     {
@@ -246,14 +246,13 @@ const MerStatement = () => {
     },
     {
       name: "Refund Amount",
-      selector: (row) =>
-        row.refund_amount ? row.refund_amount - row.pgw_charge : 0,
+      selector: (row) => (row.refund_amount ? row.refund_amount : 0),
     },
     {
       name: "Payable Amount",
       selector: (row) =>
         row.refund_amount
-          ? row.merchant_order_amount - (row.refund_amount - row.pgw_charge)
+          ? row.merchant_order_amount - row.refund_amount
           : row.merchant_order_amount,
     },
     {
@@ -325,10 +324,7 @@ const MerStatement = () => {
   const getotal = (e) => {
     let sumBankFee = 0;
     e.map((element) => {
-      sumBankFee +=
-        element.merchant_order_amount +
-        element.pgw_charge -
-        element.refund_amount;
+      sumBankFee += element.merchant_order_amount - element.refund_amount;
     });
     return parseFloat(sumBankFee).toFixed(2);
   };
@@ -368,9 +364,7 @@ const MerStatement = () => {
         Pgw_fee: element.pgw_charge,
         Refund_Amount: element.refund_amount ? element.refund_amount : 0,
         Payable_Amount: parseFloat(
-          element.merchant_order_amount +
-            element.pgw_charge -
-            element.refund_amount
+          element.merchant_order_amount - element.refund_amount
         ).toFixed(2),
         Transaction_Status: element.gw_order_status,
       });
@@ -471,13 +465,15 @@ const MerStatement = () => {
           DateTime.fromISO(element.created_at, {
             zone: "Asia/Dhaka",
           }).toLocaleString(DateTime.DATETIME_MED),
-          element.merchant_order_amount,
-          element.bank_charge,
-          element.pgw_charge,
-          element.refund_amount,
-          element.merchant_order_amount +
-            element.pgw_charge -
-            element.refund_amount,
+          parseFloat(element.merchant_order_amount).toFixed(2),
+          parseFloat(element.bank_charge).toFixed(2),
+          parseFloat(element.pgw_charge).toFixed(2),
+          parseFloat(element.refund_amount).toFixed(2),
+          parseFloat(
+            element.refund_amount
+              ? element.merchant_order_amount - element.refund_amount
+              : element.merchant_order_amount
+          ).toFixed(2),
           element.gw_order_status,
         ]),
         [
