@@ -19,6 +19,12 @@ import {
 } from "@coreui/react";
 import { DateTime } from "luxon";
 import MerStatementDetail from "./MerStatementDetail";
+import { CSVLink } from "react-csv";
+import CIcon from "@coreui/icons-react";
+import { cilDescription, cilPrint } from "@coreui/icons";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import logo from "../../assets/images/Logo";
 
 const MerStatement = () => {
   const navigate = useNavigate();
@@ -34,6 +40,7 @@ const MerStatement = () => {
   const [orderby, setOrderBy] = useState("");
   const [statement, setStatement] = useState();
   const [statementdetails, setStatementDetails] = useState();
+  console.log(statement);
 
   const getStatementList = async () => {
     const headers = {
@@ -185,8 +192,8 @@ const MerStatement = () => {
   };
 
   const setTextColor = (e) => {
-    if (e == "DISPUTED") {
-      return "text-warning";
+    if (e == "INCOMPLETE") {
+      return "text-dark";
     } else if (e == "DECLINED") {
       return "text-danger";
     } else if (e == "APPROVED") {
@@ -198,7 +205,7 @@ const MerStatement = () => {
     } else if (e == "CANCELLED") {
       return "text-muted";
     } else {
-      return "text-dark";
+      return "text-warning";
     }
   };
 
@@ -252,8 +259,14 @@ const MerStatement = () => {
     {
       name: "Order Status",
       selector: (row) => (
-        <strong className={setTextColor(row.gw_order_status)}>
-          {row.gw_order_status}
+        <strong
+          className={
+            row.dispute_status == "P"
+              ? "text-warning"
+              : setTextColor(row.gw_order_status)
+          }
+        >
+          {row.dispute_status == "P" ? "DISPUTED" : row.gw_order_status}
         </strong>
       ),
     },
@@ -278,6 +291,413 @@ const MerStatement = () => {
       ),
     },
   ];
+
+  const getotalOrderAmount = (e) => {
+    let sumOrderAmount = 0;
+    e.map((element) => {
+      sumOrderAmount += element.merchant_order_amount;
+    });
+    return parseFloat(sumOrderAmount).toFixed(2);
+  };
+
+  const getotalBankFee = (e) => {
+    let sumBankFee = 0;
+    e.map((element) => {
+      sumBankFee += element.bank_charge;
+    });
+    return parseFloat(sumBankFee).toFixed(2);
+  };
+
+  const getotalPgwFee = (e) => {
+    let sumBankFee = 0;
+    e.map((element) => {
+      sumBankFee += element.pgw_charge;
+    });
+    return parseFloat(sumBankFee).toFixed(2);
+  };
+  const getotalrefundAMount = (e) => {
+    let sumBankFee = 0;
+    e.map((element) => {
+      sumBankFee += element.refund_amount;
+    });
+    return parseFloat(sumBankFee).toFixed(2);
+  };
+  const getotal = (e) => {
+    let sumBankFee = 0;
+    e.map((element) => {
+      sumBankFee +=
+        element.merchant_order_amount +
+        element.pgw_charge -
+        element.refund_amount;
+    });
+    return parseFloat(sumBankFee).toFixed(2);
+  };
+
+  const getDateTime = (e) => {
+    let date = DateTime.fromISO(e, {
+      zone: "Asia/Dhaka",
+    }).toLocaleString(DateTime.DATETIME_MED);
+
+    return date;
+  };
+
+  const getTrnCount = (e, status) => {
+    let count = 0;
+    e?.map((element) => {
+      if (element.gw_order_status == status) {
+        count += 1;
+      }
+    });
+    return count;
+  };
+
+  const setDateForEcecl = (e) => {
+    let data = [];
+    e?.map((element) => {
+      data.push({
+        Order_ID: element.merchant_tran_id,
+        Transaction_ID: element.txn_id,
+        Merchant_id: element.merchant_id,
+        Merchant_Name: element.merchant_name,
+        mercant_short_name: element.short_name,
+        Transaction_date: DateTime.fromISO(element.created_at, {
+          zone: "Asia/Dhaka",
+        }).toLocaleString(DateTime.DATETIME_MED),
+        Order_Amount: parseFloat(element.merchant_order_amount).toFixed(2),
+        Bank_fee: element.bank_charge,
+        Pgw_fee: element.pgw_charge,
+        Refund_Amount: element.refund_amount ? element.refund_amount : 0,
+        Payable_Amount: parseFloat(
+          element.merchant_order_amount +
+            element.pgw_charge -
+            element.refund_amount
+        ).toFixed(2),
+        Transaction_Status: element.gw_order_status,
+      });
+    });
+    return data;
+  };
+
+  const gettrnAmount = (e, status) => {
+    let sum = 0;
+    e?.map((element) => {
+      if (element.gw_order_status == status) {
+        sum +=
+          element.merchant_order_amount +
+          element.pgw_charge -
+          element.refund_amount;
+      }
+    });
+    return parseFloat(sum).toFixed(2);
+  };
+
+  const getDisputeCount = (e) => {
+    let count = 0;
+    e?.map((element) => {
+      if (element.dispute_status == "P") {
+        count += 1;
+      }
+    });
+    return count;
+  };
+
+  const getDisputeAmount = (e) => {
+    let sum = 0;
+    e?.map((element) => {
+      if (element.dispute_status == "P") {
+        sum +=
+          element.merchant_order_amount +
+          element.pgw_charge -
+          element.refund_amount;
+      }
+    });
+    return parseFloat(sum).toFixed(2);
+  };
+
+  const dawonloadReport = () => {
+    const doc = new jsPDF();
+    doc.setFontSize(8);
+    var pageCount = doc.internal.getNumberOfPages();
+    var pageCurrent = doc.internal.getCurrentPageInfo().pageNumber;
+    console.log(doc.internal.getNumberOfPages());
+    doc.addImage(logo, "JPEG", 80, 3);
+    doc.text(`Merchant Id:${statement[0].merchant_id}`, 15, 25);
+    doc.text(`Merchant Name:${statement[0].merchant_name}`, 65, 25);
+    doc.text(`Merchant Short Name:${statement[0].short_name}`, 140, 25);
+    doc.text(
+      `Period:${periodFrom ? getDateTime(periodFrom) : ""} - ${
+        periodTo ? getDateTime(periodTo) : ""
+      }`,
+      68,
+      32
+    );
+    var pageSize = doc.internal.pageSize;
+    var pageHeight = pageSize.height ? pageSize.height : pageSize.getHeight();
+
+    doc.text(
+      `Print Date & Time:${DateTime.fromISO(DateTime.now(), {
+        zone: "Asia/Dhaka",
+      }).toLocaleString(DateTime.DATETIME_MED)}`,
+      15,
+      pageHeight - 10
+    );
+    doc.text(
+      `Print by:${localStorage.getItem("username")}`,
+      100,
+      pageHeight - 10
+    );
+    doc.text(`Powered By Moneybag`, 165, pageHeight - 10);
+    doc.text("page: " + pageCurrent + " of " + pageCount, 175, pageHeight - 5);
+    doc.autoTable({
+      columns: [
+        { header: "Order ID", dataKey: "merchant_tran_id" },
+        { header: "Transaction ID", dataKey: "txn_id" },
+        {
+          header: "Transaction Date",
+          dataKey: "created_at",
+        },
+        { header: "Order Amount", dataKey: "merchant_order_amount" },
+        { header: "Bank Fee", dataKey: "bank_charge" },
+        { header: "PGW Fee", dataKey: "pgw_charge" },
+        { header: "Refund Amount", dataKey: "refund_amount" },
+        { header: "Payable Amount", dataKey: "merchant_charge_amount" },
+        { header: "Transaction Status", dataKey: "gw_order_status" },
+      ],
+
+      body: [
+        ...statement.map((element) => [
+          element.merchant_tran_id,
+          element.txn_id,
+          DateTime.fromISO(element.created_at, {
+            zone: "Asia/Dhaka",
+          }).toLocaleString(DateTime.DATETIME_MED),
+          element.merchant_order_amount,
+          element.bank_charge,
+          element.pgw_charge,
+          element.refund_amount,
+          element.merchant_order_amount +
+            element.pgw_charge -
+            element.refund_amount,
+          element.gw_order_status,
+        ]),
+        [
+          {
+            content: `Total-Amount =`,
+            colSpan: 3,
+            styles: {
+              fillColor: [245, 203, 176],
+            },
+          },
+          {
+            content: getotalOrderAmount(statement),
+            colSpan: 1,
+            styles: {
+              fillColor: [245, 203, 176],
+            },
+          },
+          {
+            content: getotalBankFee(statement),
+            colSpan: 1,
+            styles: {
+              fillColor: [245, 203, 176],
+            },
+          },
+          {
+            content: getotalPgwFee(statement),
+            colSpan: 1,
+            styles: {
+              fillColor: [245, 203, 176],
+            },
+          },
+          {
+            content: getotalrefundAMount(statement),
+            colSpan: 1,
+            styles: {
+              fillColor: [245, 203, 176],
+            },
+          },
+          {
+            content: getotal(statement),
+            colSpan: 2,
+            styles: {
+              fillColor: [245, 203, 176],
+            },
+          },
+        ],
+        [
+          {
+            content: `Approved Transaction = ${getTrnCount(
+              statement,
+              "APPROVED"
+            )}`,
+            colSpan: 2,
+            styles: {
+              fillColor: [187, 237, 192],
+            },
+          },
+          {
+            content: `Approved Amount = ${gettrnAmount(statement, "APPROVED")}`,
+            colSpan: 2,
+            styles: {
+              fillColor: [187, 237, 192],
+            },
+          },
+          {
+            content: `Disputed Transaction = ${getDisputeCount(statement)}`,
+            colSpan: 3,
+            styles: {
+              fillColor: [246, 252, 192],
+            },
+          },
+          {
+            content: `Disputed Amount = ${getDisputeAmount(statement)}`,
+            colSpan: 3,
+            styles: {
+              fillColor: [246, 252, 192],
+            },
+          },
+        ],
+        [
+          {
+            content: `Cancelled Transaction = ${getTrnCount(
+              statement,
+              "CANCELLED"
+            )}`,
+            colSpan: 2,
+            styles: {
+              fillColor: [250, 195, 195],
+            },
+          },
+          {
+            content: `Cancelled Amount = ${gettrnAmount(
+              statement,
+              "CANCELLED"
+            )}`,
+            colSpan: 2,
+            styles: {
+              fillColor: [250, 195, 195],
+            },
+          },
+          {
+            content: `Declined Transaction = ${getTrnCount(
+              statement,
+              "DECLINED"
+            )}`,
+            colSpan: 3,
+            styles: {
+              fillColor: [250, 195, 195],
+            },
+          },
+          {
+            content: `Declined Amount = ${gettrnAmount(statement, "DECLINED")}`,
+            colSpan: 3,
+            styles: {
+              fillColor: [250, 195, 195],
+            },
+          },
+        ],
+        [
+          {
+            content: `Reversed Transaction = ${getTrnCount(
+              statement,
+              "REVERSED"
+            )}`,
+            colSpan: 2,
+            styles: {
+              fillColor: [199, 220, 242],
+            },
+          },
+          {
+            content: `Reversed Amount = ${gettrnAmount(statement, "REVERSED")}`,
+            colSpan: 2,
+            styles: {
+              fillColor: [199, 220, 242],
+            },
+          },
+          {
+            content: `Refunded Transaction = ${getTrnCount(
+              statement,
+              "REFUNDED"
+            )}`,
+            colSpan: 3,
+            styles: {
+              fillColor: [210, 247, 246],
+            },
+          },
+          {
+            content: `Refunded Amount = ${gettrnAmount(statement, "REFUNDED")}`,
+            colSpan: 3,
+            styles: {
+              fillColor: [210, 247, 246],
+            },
+          },
+        ],
+        [
+          {
+            content: `Incomplete Transaction = ${getTrnCount(
+              statement,
+              "INCOMPLETE"
+            )}`,
+            colSpan: 2,
+            styles: {
+              fillColor: [243, 220, 245],
+            },
+          },
+          {
+            content: `Incomplete Amount = ${gettrnAmount(
+              statement,
+              "INCOMPLETE"
+            )}`,
+            colSpan: 2,
+            styles: {
+              fillColor: [243, 220, 245],
+            },
+          },
+        ],
+      ],
+      showHead: "everyPage",
+      styles: { fontSize: 6 },
+      margin: { top: 35 },
+    });
+    for (var i = 0; i < pageCount; i++) {
+      doc.setPage(i);
+      doc.addImage(logo, "JPEG", 80, 3);
+      doc.text(`Merchant Id:${statement[0].merchant_id}`, 15, 25);
+      doc.text(`Merchant Name:${statement[0].merchant_name}`, 65, 25);
+      doc.text(`Merchant Short Name:${statement[0].short_name}`, 140, 25);
+      doc.text(
+        `Period:${periodFrom ? getDateTime(periodFrom) : ""} - ${
+          periodTo ? getDateTime(periodTo) : ""
+        }`,
+        68,
+        32
+      );
+      var pageSize = doc.internal.pageSize;
+      var pageHeight = pageSize.height ? pageSize.height : pageSize.getHeight();
+
+      doc.text(
+        `Print Date & Time:${DateTime.fromISO(DateTime.now(), {
+          zone: "Asia/Dhaka",
+        }).toLocaleString(DateTime.DATETIME_MED)}`,
+        15,
+        pageHeight - 10
+      );
+      doc.text(
+        `Print by:${localStorage.getItem("username")}`,
+        100,
+        pageHeight - 10
+      );
+      doc.text(`Powered By Moneybag`, 165, pageHeight - 10);
+      doc.text(
+        "page: " + pageCurrent + " of " + pageCount,
+        175,
+        pageHeight - 5
+      );
+    }
+    console.log(pageCount);
+
+    doc.save(`transation${Date()}.pdf`);
+  };
 
   useEffect(() => {
     getStatementList();
@@ -353,6 +773,25 @@ const MerStatement = () => {
             columns={column}
             data={statement}
             pagination={50}
+            actions={
+              <div>
+                <CButton
+                  className="btn btn-secondary mx-1"
+                  color="primary"
+                  onClick={dawonloadReport}
+                >
+                  <CIcon icon={cilPrint} />
+                </CButton>
+
+                <CSVLink
+                  data={setDateForEcecl(statement)}
+                  className="btn btn-secondary"
+                  filename={`transation-list${Date()}`}
+                >
+                  <CIcon icon={cilDescription} />
+                </CSVLink>
+              </div>
+            }
           />
         </CCol>
       </CRow>

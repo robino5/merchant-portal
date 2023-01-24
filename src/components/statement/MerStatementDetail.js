@@ -11,10 +11,7 @@ const MerStatementDetail = (props) => {
 
   useEffect(() => {
     let status;
-    if (
-      props.data.gw_order_status != "IN_PROGRESS" &&
-      props.data.gw_order_status != "DECLINED"
-    ) {
+    if (props.data.gw_json_log) {
       if (props.data.gw_json_log.Message) {
         delete props.data.gw_json_log.Message.ThreeDSVars;
         status = props.data.gw_json_log.Message;
@@ -31,8 +28,8 @@ const MerStatementDetail = (props) => {
   }, []);
 
   const setTextColor = (e) => {
-    if (e == "DISPUTED") {
-      return "text-warning";
+    if (e == "INCOMPLETE") {
+      return "text-dark";
     } else if (e == "DECLINED") {
       return "text-danger";
     } else if (e == "APPROVED") {
@@ -44,7 +41,7 @@ const MerStatementDetail = (props) => {
     } else if (e == "CANCELLED") {
       return "text-muted";
     } else {
-      return "text-dark";
+      return "text-warning";
     }
   };
 
@@ -104,9 +101,17 @@ const MerStatementDetail = (props) => {
                   <td>:</td>
                   <td>
                     {" "}
-                    <span className={setTextColor(props.data.gw_order_status)}>
-                      {props.data.gw_order_status}
-                    </span>
+                    <strong
+                      className={
+                        props.data.dispute_status == "P"
+                          ? "text-warning"
+                          : setTextColor(props.data.gw_order_status)
+                      }
+                    >
+                      {props.data.dispute_status == "P"
+                        ? "DISPUTED"
+                        : props.data.gw_order_status}
+                    </strong>
                   </td>
                 </tr>
                 <tr>
