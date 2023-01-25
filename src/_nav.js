@@ -28,13 +28,18 @@ const _nav = [
   // },
   {
     component: CNavGroup,
-    name: "Statement",
+    name: "Merchant",
     to: "",
     items: [
       {
         component: CNavItem,
         name: "Transaction Statement",
         to: "/statement",
+      },
+      {
+        component: CNavItem,
+        name: "Settlement Report",
+        to: "/settlement-report",
       },
       // {
       //   component: CNavItem,

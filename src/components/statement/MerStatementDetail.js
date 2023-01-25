@@ -124,15 +124,6 @@ const MerStatementDetail = (props) => {
                   </td>
                 </tr>
                 <tr>
-                  <td>Last update date</td>
-                  <td>:</td>
-                  <td>
-                    {DateTime.fromISO(props.data.updated_at, {
-                      zone: "Asia/Dhaka",
-                    }).toLocaleString(DateTime.DATETIME_MED)}
-                  </td>
-                </tr>
-                <tr>
                   <td>Amount</td>
                   <td>:</td>
                   <td>{props.data.merchant_order_amount}</td>

@@ -72,7 +72,7 @@ const MerStatement = () => {
       .catch((error) => {
         console.error("There was an error!", error);
         if (error.response.status == 401) {
-          navigate("/");
+          navigate("/#");
         }
       });
   };
@@ -114,7 +114,7 @@ const MerStatement = () => {
   };
 
   const onCancel = () => {
-    navigate("/");
+    navigate("/#");
   };
 
   //   console.log(orderAmount);
@@ -241,7 +241,7 @@ const MerStatement = () => {
       minWidth: "70px;",
     },
     {
-      name: "Amount",
+      name: "Order Amount",
       selector: (row) => row.merchant_order_amount,
     },
     {
@@ -355,7 +355,7 @@ const MerStatement = () => {
         Transaction_ID: element.txn_id,
         Merchant_id: element.merchant_id,
         Merchant_Name: element.merchant_name,
-        mercant_short_name: element.short_name,
+        Merchant_short_name: element.short_name,
         Transaction_date: DateTime.fromISO(element.created_at, {
           zone: "Asia/Dhaka",
         }).toLocaleString(DateTime.DATETIME_MED),
@@ -742,8 +742,8 @@ const MerStatement = () => {
                 <CFormLabel className="mt-2">Order by</CFormLabel>
                 <CFormSelect size="sm" onChange={handleOrderBy}>
                   <option value={""}>Select One</option>
-                  <option>ASC</option>
-                  <option>DESC</option>
+                  <option value={"ASC"}>Ascending</option>
+                  <option value={"DESC"}>Descending</option>
                 </CFormSelect>
                 <CButton
                   className="mt-2"

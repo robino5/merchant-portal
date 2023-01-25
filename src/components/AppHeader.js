@@ -150,7 +150,7 @@ const AppHeader = () => {
             </CNavLink>
           </CNavItem> */}
             <CNavItem>
-              <CNavLink href="#">LogOut</CNavLink>
+              <CNavLink href="#">Sign Out</CNavLink>
             </CNavItem>
             <CNavItem>
               <CNavLink className="chang-password" onClick={openModal}>

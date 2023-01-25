@@ -1,4 +1,4 @@
-import React from 'react'
+import React from "react";
 
 // const Dashboard = React.lazy(() => import('./views/dashboard/Dashboard'))
 // const Colors = React.lazy(() => import('./views/theme/colors/Colors'))
@@ -50,7 +50,15 @@ import React from 'react'
 
 // const Widgets = React.lazy(() => import('./views/widgets/Widgets'))
 
-const MerStatement = React.lazy(() => import('./components/statement/MerStatement'))
+const MerStatement = React.lazy(() =>
+  import("./components/statement/MerStatement")
+);
+const SettlementReport = React.lazy(() =>
+  import("./components/statement/SettlementReport")
+);
+const LoginRedirect = React.lazy(() =>
+  import("./views/pages/login/LoginRedirect")
+);
 
 const routes = [
   //   { path: '/', exact: true, name: 'Home' },
@@ -95,8 +103,14 @@ const routes = [
   //   { path: '/notifications/alerts', name: 'Alerts', element: Alerts },
   //   { path: '/notifications/badges', name: 'Badges', element: Badges },
   //   { path: '/notifications/modals', name: 'Modals', element: Modals },
-  { path: '/statement', name: 'statement', element: MerStatement },
+  { path: "/statement", name: "statement", element: MerStatement },
+  {
+    path: "/settlement-report",
+    name: "settlement-Report",
+    element: SettlementReport,
+  },
+  { path: "/login-redirect", name: "loginredirect", element: LoginRedirect },
   //   { path: '/widgets', name: 'Widgets', element: Widgets },
-]
+];
 
-export default routes
+export default routes;
