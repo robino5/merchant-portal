@@ -76,13 +76,12 @@ const ForgetPassword = () => {
             0,
             3
           )}........${response.data.email.slice(
-            response.data.email.length - 13,
+            response.data.email.indexOf("@") - 3,
             response.data.email.length
           )}`,
           icon: "success",
           position: "top-end",
-          button: false,
-          timer: 1500,
+          button: true,
         });
         setUserHide(true);
         setOtpHide(false);
