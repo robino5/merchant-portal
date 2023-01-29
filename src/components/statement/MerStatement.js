@@ -128,7 +128,8 @@ const MerStatement = () => {
       txn_id: txn,
       period_from: `${periodFrom}T00:00:00`,
       period_to: `${periodTo}T23:59:59`,
-      status: staus,
+      status: staus == "DISPUTED" ? "" : staus,
+      disputed: staus == "DISPUTED" ? true : false,
       currency: currency,
       amount_from: amontFrom,
       amount_to: amontTo,
@@ -146,8 +147,11 @@ const MerStatement = () => {
     if (!periodTo) {
       delete data.period_to;
     }
-    if (!staus) {
+    if (!staus || staus == "DISPUTED") {
       delete data.status;
+    }
+    if (staus != "DISPUTED") {
+      delete data.disputed;
     }
     if (!currency || currency == "ALL") {
       delete data.currency;
