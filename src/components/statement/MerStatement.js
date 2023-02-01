@@ -732,6 +732,7 @@ const MerStatement = () => {
                   <option>REFUNDED</option>
                   <option>DECLINED</option>
                   <option>CANCELLED</option>
+                  <option>INITIATED</option>
                   <option>INCOMPLETE</option>
                 </CFormSelect>
                 <CFormLabel className="mt-2">Currency</CFormLabel>

@@ -18,6 +18,12 @@ const MerStatementDetail = (props) => {
         Object.keys(status).forEach((e) =>
           object.push({ key: e, value: status[e] })
         );
+      } else if (props.data.gw_json_log.XMLOut.Message) {
+        delete props.data.gw_json_log.XMLOut.Message.ThreeDSVars;
+        status = props.data.gw_json_log.XMLOut.Message;
+        Object.keys(status).forEach((e) =>
+          object.push({ key: e, value: status[e] })
+        );
       } else if (props.data.gw_json_log) {
         status = props.data.gw_json_log;
         Object.keys(status).forEach((e) =>
